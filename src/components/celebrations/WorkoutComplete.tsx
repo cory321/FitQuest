@@ -54,7 +54,7 @@ export function WorkoutComplete({
 								stiffness: 200,
 								damping: 20,
 							}}
-							className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/90 dark:to-emerald-950/90 rounded-3xl p-8 max-w-sm w-full shadow-2xl border-4 border-green-300 dark:border-green-700"
+							className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/95 dark:to-green-950/95 rounded-3xl p-8 max-w-sm w-full shadow-2xl border-4 border-emerald-400 dark:border-emerald-700"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Trophy Icon */}
@@ -69,7 +69,7 @@ export function WorkoutComplete({
 								className="flex justify-center mb-4"
 							>
 								<div className="relative">
-									<Trophy className="h-20 w-20 text-yellow-500 fill-yellow-500" />
+									<Trophy className="h-20 w-20 text-amber-600 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
 									<motion.div
 										animate={{
 											scale: [1, 1.2, 1],
@@ -82,7 +82,7 @@ export function WorkoutComplete({
 										}}
 										className="absolute -top-2 -right-2"
 									>
-										<Star className="h-8 w-8 text-yellow-400 fill-yellow-400" />
+										<Star className="h-8 w-8 text-amber-500 dark:text-amber-300 fill-amber-500 dark:fill-amber-300" />
 									</motion.div>
 								</div>
 							</motion.div>
@@ -92,7 +92,7 @@ export function WorkoutComplete({
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.3 }}
-								className="text-3xl font-bold text-center text-green-800 dark:text-green-200 mb-2"
+								className="text-3xl font-bold text-center text-emerald-900 dark:text-emerald-100 mb-2"
 							>
 								{message}
 							</motion.h2>
@@ -101,7 +101,7 @@ export function WorkoutComplete({
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ delay: 0.4 }}
-								className="text-center text-green-700 dark:text-green-300 text-lg mb-6"
+								className="text-center text-emerald-800 dark:text-emerald-200 text-lg mb-6"
 							>
 								Workout Complete!
 							</motion.p>
@@ -111,9 +111,9 @@ export function WorkoutComplete({
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.5 }}
-								className="bg-white/50 dark:bg-black/20 rounded-xl p-4 mb-6"
+								className="bg-white/60 dark:bg-black/30 rounded-xl p-4 mb-6"
 							>
-								<div className="flex items-center justify-center gap-2 text-green-800 dark:text-green-200">
+								<div className="flex items-center justify-center gap-2 text-emerald-900 dark:text-emerald-100">
 									<TrendingUp className="h-5 w-5" />
 									<span className="text-2xl font-bold">{exerciseCount}</span>
 									<span className="text-sm">exercises completed</span>
@@ -127,7 +127,7 @@ export function WorkoutComplete({
 								transition={{ delay: 0.6 }}
 								whileTap={{ scale: 0.95 }}
 								onClick={onDismiss}
-								className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-colors"
+								className="w-full bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white dark:text-gray-100 font-bold py-3 px-6 rounded-xl shadow-lg transition-colors"
 							>
 								Awesome!
 							</motion.button>

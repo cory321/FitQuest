@@ -310,8 +310,8 @@ export function TemplateSelector() {
 						</Button>
 					</motion.div>
 					<div className="flex-1">
-						<h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-							<Dumbbell className="h-7 w-7 text-primary" />
+						<h1 className="text-2xl sm:text-4xl font-bold font-heading tracking-tight flex items-center gap-3">
+							<Dumbbell className="h-7 w-7 sm:h-9 sm:w-9 text-primary" />
 							{isBrowseMode ? 'Workout Templates' : 'Manage Templates'}
 						</h1>
 						{selectedDate && (

@@ -272,7 +272,7 @@ export function SessionWorkoutPage() {
 							</Button>
 						</motion.div>
 						<div className="flex-1 min-w-0">
-							<h1 className="text-xl sm:text-2xl font-bold truncate">
+							<h1 className="text-xl sm:text-3xl font-bold font-heading tracking-tight truncate">
 								{sessionName}
 							</h1>
 						</div>

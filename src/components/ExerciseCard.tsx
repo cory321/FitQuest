@@ -35,7 +35,7 @@ export function ExerciseCard({
 			transition={{ delay: index * 0.05 }}
 			className={`border-2 rounded-lg p-4 transition-colors bg-card ${
 				exercise.completed
-					? 'border-green-300 dark:border-green-800 shadow-md bg-green-50 dark:bg-green-950/30'
+					? 'border-emerald-400 dark:border-emerald-700 shadow-md bg-emerald-50 dark:bg-emerald-950/40'
 					: 'border-border shadow-sm'
 			}`}
 		>
@@ -47,8 +47,8 @@ export function ExerciseCard({
 					disabled={savingFields.has(`${exercise.id}-completed`)}
 					className={`flex-shrink-0 mt-1 w-7 h-7 rounded-md border-2 flex items-center justify-center transition-all ${
 						exercise.completed
-							? 'bg-green-600 border-green-600'
-							: 'bg-card border-border hover:border-green-400'
+							? 'bg-emerald-600 border-emerald-600 dark:bg-emerald-700 dark:border-emerald-700'
+							: 'bg-card border-border hover:border-emerald-500 dark:hover:border-emerald-600'
 					} ${
 						savingFields.has(`${exercise.id}-completed`)
 							? 'opacity-50 cursor-not-allowed'
@@ -56,14 +56,14 @@ export function ExerciseCard({
 					}`}
 				>
 					{savingFields.has(`${exercise.id}-completed`) ? (
-						<Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+						<Loader2 className="h-4 w-4 animate-spin text-gray-500 dark:text-gray-400" />
 					) : exercise.completed ? (
 						<motion.div
 							initial={{ scale: 0, rotate: -180 }}
 							animate={{ scale: 1, rotate: 0 }}
 							transition={{ type: 'spring', stiffness: 400, damping: 15 }}
 						>
-							<Check className="h-5 w-5 text-white stroke-[3]" />
+							<Check className="h-5 w-5 text-white dark:text-gray-100 stroke-[3]" />
 						</motion.div>
 					) : null}
 				</motion.button>
@@ -135,7 +135,7 @@ export function ExerciseCard({
 										)}
 										{savedFields.has(`${exercise.id}-reps`) && (
 											<motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-												<CheckCircle2 className="h-4 w-4 text-green-600" />
+												<CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
 											</motion.div>
 										)}
 									</div>
@@ -183,7 +183,7 @@ export function ExerciseCard({
 										)}
 										{savedFields.has(`${exercise.id}-weight`) && (
 											<motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-												<CheckCircle2 className="h-4 w-4 text-green-600" />
+												<CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
 											</motion.div>
 										)}
 									</div>

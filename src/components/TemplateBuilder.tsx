@@ -257,7 +257,7 @@ export function TemplateBuilder({
 							<ArrowLeft className="h-6 w-6" />
 						</Button>
 					</motion.div>
-					<h1 className="text-2xl sm:text-3xl font-bold flex-1">
+					<h1 className="text-2xl sm:text-4xl font-bold font-heading tracking-tight flex-1">
 						{templateId ? 'Edit Template' : 'Create Template'}
 					</h1>
 				</motion.div>

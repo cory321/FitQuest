@@ -174,7 +174,7 @@ export function WorkoutDialog({
 						style={{ maxHeight: 'calc(100vh - 120px)' }}
 					>
 						{error && (
-							<div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+							<div className="bg-red-50 dark:bg-red-950/40 border-2 border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 px-3 py-2 rounded text-sm">
 								{error}
 							</div>
 						)}
@@ -249,7 +249,7 @@ export function WorkoutDialog({
 																		haptics.warning();
 																		handleDeleteSession(session.id);
 																	}}
-																	className="h-10 w-10 p-0 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+																	className="h-10 w-10 p-0 hover:bg-red-100 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-400 transition-colors"
 																>
 																	<Trash2 className="h-5 w-5" />
 																</Button>
@@ -317,7 +317,7 @@ export function WorkoutDialog({
 																haptics.warning();
 																handleDelete(workout.id);
 															}}
-															className="ml-3 h-10 w-10 p-0 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+															className="ml-3 h-10 w-10 p-0 hover:bg-red-100 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-400 transition-colors"
 														>
 															<Trash2 className="h-5 w-5" />
 														</Button>

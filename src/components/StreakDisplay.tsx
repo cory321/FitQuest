@@ -20,12 +20,12 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 
 	if (isLoading) {
 		return (
-			<div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 rounded-2xl p-4 border-2 border-orange-200 dark:border-orange-800/50">
+			<div className="bg-white dark:bg-accent rounded-2xl p-4 border-2 border-border shadow-md">
 				<div className="animate-pulse flex items-center gap-3">
-					<div className="w-12 h-12 bg-orange-200 dark:bg-orange-800 rounded-full" />
+					<div className="w-12 h-12 bg-muted rounded-full" />
 					<div className="flex-1">
-						<div className="h-4 bg-orange-200 dark:bg-orange-800 rounded w-24 mb-2" />
-						<div className="h-3 bg-orange-200 dark:bg-orange-800 rounded w-32" />
+						<div className="h-4 bg-muted rounded w-24 mb-2" />
+						<div className="h-3 bg-muted rounded w-32" />
 					</div>
 				</div>
 			</div>
@@ -39,7 +39,7 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 			initial={{ opacity: 0, y: -20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.4 }}
-			className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-orange-950/30 dark:via-red-950/30 dark:to-pink-950/30 rounded-2xl p-4 border-2 border-orange-200 dark:border-orange-800/50 shadow-lg"
+			className="bg-white dark:bg-accent rounded-2xl p-5 border-2 border-border shadow-lg"
 		>
 			<div className="flex items-center gap-4">
 				{/* Streak Flame */}
@@ -58,7 +58,7 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 					<div className="relative">
 						<Flame
 							className={`h-12 w-12 ${
-								isStreakActive ? 'text-orange-500' : 'text-gray-400'
+								isStreakActive ? 'text-primary' : 'text-muted-foreground'
 							}`}
 							fill={isStreakActive ? 'currentColor' : 'none'}
 						/>
@@ -68,7 +68,7 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 								animate={{ scale: 1 }}
 								className="absolute -top-1 -right-1"
 							>
-								<Trophy className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+								<Trophy className="h-5 w-5 text-amber-600 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
 							</motion.div>
 						)}
 					</div>
@@ -82,18 +82,18 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 							initial={{ scale: 1.5, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 200 }}
-							className="text-3xl font-bold text-orange-600 dark:text-orange-400"
+							className="text-3xl font-bold font-heading text-primary"
 						>
 							{currentStreak}
 						</motion.span>
-						<span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+						<span className="text-sm font-semibold text-foreground">
 							day streak
 						</span>
 					</div>
 					<p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
 						{isStreakActive ? (
 							<>
-								<Flame className="h-3 w-3 text-orange-500" />
+								<Flame className="h-3 w-3 text-primary" />
 								Keep it going!
 							</>
 						) : (
@@ -117,7 +117,7 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 								stroke="currentColor"
 								strokeWidth="4"
 								fill="none"
-								className="text-orange-200 dark:text-orange-900"
+								className="text-muted"
 							/>
 							{/* Progress circle */}
 							<motion.circle
@@ -133,13 +133,13 @@ export function StreakDisplay({ refreshTrigger }: StreakDisplayProps) {
 									strokeDashoffset: 2 * Math.PI * 28 * (1 - weeklyCount / 7),
 								}}
 								transition={{ duration: 1, ease: 'easeOut' }}
-								className="text-orange-500"
+								className="text-primary"
 								strokeLinecap="round"
 							/>
 						</svg>
 						{/* Center text */}
 						<div className="absolute inset-0 flex flex-col items-center justify-center">
-							<span className="text-xl font-bold text-orange-600 dark:text-orange-400">
+							<span className="text-xl font-bold font-heading text-primary">
 								{weeklyCount}
 							</span>
 							<span className="text-[8px] text-muted-foreground">/7</span>
