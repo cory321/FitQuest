@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { supabase, type SessionExercise } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ThemeToggle } from './ThemeToggle';
+import { WorkoutComplete } from './celebrations/WorkoutComplete';
+import { ExerciseCard } from './ExerciseCard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptics } from '@/lib/haptics';
 
 export function SessionWorkoutPage() {
 	const navigate = useNavigate();
@@ -18,7 +20,11 @@ export function SessionWorkoutPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [savingFields, setSavingFields] = useState<Set<string>>(new Set());
 	const [savedFields, setSavedFields] = useState<Set<string>>(new Set());
-	const debounceTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+	const debounceTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+		new Map()
+	);
+	const [showCelebration, setShowCelebration] = useState(false);
+	const [lastCompletedCount, setLastCompletedCount] = useState(0);
 
 	useEffect(() => {
 		if (sessionId) {
@@ -128,7 +134,16 @@ export function SessionWorkoutPage() {
 
 	const toggleCompleted = (exercise: SessionExercise) => {
 		const fieldKey = `${exercise.id}-completed`;
-		updateExercise(exercise.id, fieldKey, { completed: !exercise.completed });
+		const newCompleted = !exercise.completed;
+
+		// Haptic feedback
+		if (newCompleted) {
+			haptics.success();
+		} else {
+			haptics.buttonPress();
+		}
+
+		updateExercise(exercise.id, fieldKey, { completed: newCompleted });
 	};
 
 	const updateActualReps = (exercise: SessionExercise, value: string) => {
@@ -186,6 +201,37 @@ export function SessionWorkoutPage() {
 	const progressPercentage =
 		totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+	// Check for workout completion
+	useEffect(() => {
+		if (
+			completedCount === totalCount &&
+			totalCount > 0 &&
+			completedCount > lastCompletedCount
+		) {
+			setShowCelebration(true);
+			haptics.celebration();
+		}
+		setLastCompletedCount(completedCount);
+	}, [completedCount, totalCount]);
+
+	const adjustWeight = (exercise: SessionExercise, delta: number) => {
+		const currentWeight = exercise.actual_weight || exercise.target_weight || 0;
+		const newWeight = Math.max(0, currentWeight + delta);
+		haptics.buttonPress();
+
+		const fieldKey = `${exercise.id}-weight`;
+		updateExercise(exercise.id, fieldKey, { actual_weight: newWeight });
+	};
+
+	const adjustReps = (exercise: SessionExercise, delta: number) => {
+		const currentReps = exercise.actual_reps || exercise.target_reps || 0;
+		const newReps = Math.max(0, currentReps + delta);
+		haptics.buttonPress();
+
+		const fieldKey = `${exercise.id}-reps`;
+		updateExercise(exercise.id, fieldKey, { actual_reps: newReps });
+	};
+
 	if (isLoading) {
 		return (
 			<div className="min-h-screen bg-background flex items-center justify-center">
@@ -196,216 +242,135 @@ export function SessionWorkoutPage() {
 
 	return (
 		<div className="min-h-screen bg-background pb-20">
+			{/* Celebration Modal */}
+			<WorkoutComplete
+				show={showCelebration}
+				exerciseCount={totalCount}
+				onDismiss={() => setShowCelebration(false)}
+			/>
+
 			{/* Header */}
-			<div className="bg-card border-b sticky top-0 z-10 shadow-sm">
+			<motion.div
+				initial={{ y: -100 }}
+				animate={{ y: 0 }}
+				transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+				className="bg-card border-b sticky top-0 z-10 shadow-sm"
+			>
 				<div className="max-w-4xl mx-auto p-4">
 					<div className="flex items-center gap-3 mb-3">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => navigate('/')}
-							className="flex-shrink-0"
-						>
-							<ArrowLeft className="h-6 w-6" />
-						</Button>
+						<motion.div whileTap={{ scale: 0.9 }}>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => {
+									haptics.buttonPress();
+									navigate('/');
+								}}
+								className="flex-shrink-0"
+							>
+								<ArrowLeft className="h-6 w-6" />
+							</Button>
+						</motion.div>
 						<div className="flex-1 min-w-0">
 							<h1 className="text-xl sm:text-2xl font-bold truncate">
 								{sessionName}
 							</h1>
 						</div>
 						<ThemeToggle />
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={handleDeleteSession}
-							className="flex-shrink-0 hover:bg-red-50 hover:text-red-600"
-						>
-							<Trash2 className="h-5 w-5" />
-						</Button>
+						<motion.div whileTap={{ scale: 0.9 }}>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => {
+									haptics.warning();
+									handleDeleteSession();
+								}}
+								className="flex-shrink-0 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600"
+							>
+								<Trash2 className="h-5 w-5" />
+							</Button>
+						</motion.div>
 					</div>
 
 					{/* Progress Bar */}
 					<div>
 						<div className="flex items-center justify-between text-sm mb-2">
 							<span className="text-muted-foreground">Progress</span>
-							<span className="font-semibold text-base">
+							<motion.span
+								key={completedCount}
+								initial={{ scale: 1.2 }}
+								animate={{ scale: 1 }}
+								className="font-semibold text-base"
+							>
 								{completedCount} / {totalCount} completed
-							</span>
+							</motion.span>
 						</div>
 						<div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-							<div
-								className="bg-primary h-3 transition-all duration-300 rounded-full"
-								style={{ width: `${progressPercentage}%` }}
-							/>
+							<motion.div
+								initial={{ width: 0 }}
+								animate={{ width: `${progressPercentage}%` }}
+								transition={{ duration: 0.5, ease: 'easeOut' }}
+								className="bg-gradient-to-r from-primary to-orange-500 h-3 rounded-full relative overflow-hidden"
+							>
+								{/* Shimmer effect */}
+								<motion.div
+									animate={{
+										x: ['-100%', '200%'],
+									}}
+									transition={{
+										duration: 2,
+										repeat: Infinity,
+										ease: 'linear',
+									}}
+									className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+								/>
+							</motion.div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</motion.div>
 
 			{/* Content */}
 			<div className="max-w-4xl mx-auto p-4">
 				{error && (
-					<div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4">
+					<motion.div
+						initial={{ opacity: 0, height: 0 }}
+						animate={{ opacity: 1, height: 'auto' }}
+						className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg mb-4"
+					>
 						{error}
-					</div>
+					</motion.div>
 				)}
 
 				{exercises.length === 0 ? (
-					<div className="text-center py-12 text-muted-foreground">
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						className="text-center py-12 text-muted-foreground"
+					>
 						No exercises in this session
-					</div>
+					</motion.div>
 				) : (
-					<div className="space-y-3">
-						{exercises.map((exercise, index) => (
-							<div
-								key={exercise.id}
-								className={`border-2 rounded-lg p-4 transition-all ${
-									exercise.completed
-										? 'bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-800 shadow-sm'
-										: 'bg-card border shadow-sm'
-								}`}
-							>
-								<div className="flex items-start gap-3">
-									{/* Checkbox */}
-									<button
-										onClick={() => toggleCompleted(exercise)}
-										disabled={savingFields.has(`${exercise.id}-completed`)}
-										className={`flex-shrink-0 mt-1 w-7 h-7 rounded-md border-2 flex items-center justify-center transition-all ${
-											exercise.completed
-												? 'bg-green-600 border-green-600'
-												: 'bg-card border-border hover:border-green-400 active:scale-95'
-										} ${
-											savingFields.has(`${exercise.id}-completed`)
-												? 'opacity-50 cursor-not-allowed'
-												: ''
-										}`}
-									>
-										{savingFields.has(`${exercise.id}-completed`) ? (
-											<Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-										) : exercise.completed ? (
-											<Check className="h-5 w-5 text-white stroke-[3]" />
-										) : null}
-									</button>
-
-									<div className="flex-1 min-w-0">
-										{/* Exercise Name and Number */}
-										<div className="flex items-start justify-between mb-3">
-											<div className="flex-1">
-												<div className="flex items-baseline gap-2">
-													<span className="text-primary font-bold text-lg">
-														{index + 1}.
-													</span>
-													<h3
-														className={`font-bold text-lg ${
-															exercise.completed
-																? 'line-through text-muted-foreground'
-																: ''
-														}`}
-													>
-														{exercise.exercise_name}
-													</h3>
-												</div>
-												{/* Set Number */}
-												<div className="text-xs text-primary font-semibold mt-1 ml-7">
-													Set {exercise.set_number} of {exercise.total_sets}
-												</div>
-												{/* Target */}
-												<div className="text-sm text-muted-foreground mt-1 ml-7">
-													<span className="font-semibold">Target:</span>
-													{exercise.target_reps &&
-														` ${exercise.target_reps} reps`}
-													{exercise.target_reps &&
-														exercise.target_weight &&
-														', '}
-													{exercise.target_weight &&
-														` ${exercise.target_weight} lbs`}
-													{!exercise.target_reps &&
-														!exercise.target_weight &&
-														' -'}
-												</div>
-											</div>
-										</div>
-
-										{/* Actual Input Fields */}
-										<div className="grid grid-cols-2 gap-3 ml-7">
-											<div className="relative">
-												<Label
-													htmlFor={`actual-reps-${exercise.id}`}
-													className="text-sm font-semibold mb-2 block"
-												>
-													Actual Reps
-												</Label>
-												<div className="relative">
-													<Input
-														id={`actual-reps-${exercise.id}`}
-														type="number"
-														placeholder="0"
-														value={exercise.actual_reps || ''}
-														onChange={(e) =>
-															updateActualReps(exercise, e.target.value)
-														}
-														className="h-11 text-base pr-10"
-														min="0"
-													/>
-													<div className="absolute right-3 top-1/2 -translate-y-1/2">
-														{savingFields.has(`${exercise.id}-reps`) && (
-															<Loader2 className="h-4 w-4 animate-spin text-primary" />
-														)}
-														{savedFields.has(`${exercise.id}-reps`) && (
-															<CheckCircle2 className="h-4 w-4 text-green-600" />
-														)}
-													</div>
-												</div>
-											</div>
-											<div className="relative">
-												<Label
-													htmlFor={`actual-weight-${exercise.id}`}
-													className="text-sm font-semibold mb-2 block"
-												>
-													Actual Weight (lbs)
-												</Label>
-												<div className="relative">
-													<Input
-														id={`actual-weight-${exercise.id}`}
-														type="number"
-														step="0.1"
-														placeholder="0"
-														value={exercise.actual_weight || ''}
-														onChange={(e) =>
-															updateActualWeight(exercise, e.target.value)
-														}
-														className="h-11 text-base pr-10"
-														min="0"
-													/>
-													<div className="absolute right-3 top-1/2 -translate-y-1/2">
-														{savingFields.has(`${exercise.id}-weight`) && (
-															<Loader2 className="h-4 w-4 animate-spin text-primary" />
-														)}
-														{savedFields.has(`${exercise.id}-weight`) && (
-															<CheckCircle2 className="h-4 w-4 text-green-600" />
-														)}
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-				)}
-
-				{/* Completion Message */}
-				{completedCount === totalCount && totalCount > 0 && (
-					<div className="mt-6 p-6 bg-green-50 border-2 border-green-300 rounded-lg text-center">
-						<p className="text-4xl mb-2">🎉</p>
-						<p className="text-lg font-bold text-green-800 mb-1">
-							Workout Complete!
-						</p>
-						<p className="text-sm text-green-700">
-							Great job finishing all {totalCount} exercises!
-						</p>
-					</div>
+					<AnimatePresence>
+						<div className="space-y-3">
+							{exercises.map((exercise, index) => (
+								<ExerciseCard
+									key={exercise.id}
+									exercise={exercise}
+									index={index}
+									onToggleComplete={() => toggleCompleted(exercise)}
+									onUpdateReps={(value) => updateActualReps(exercise, value)}
+									onUpdateWeight={(value) =>
+										updateActualWeight(exercise, value)
+									}
+									onAdjustReps={(delta) => adjustReps(exercise, delta)}
+									onAdjustWeight={(delta) => adjustWeight(exercise, delta)}
+									savingFields={savingFields}
+									savedFields={savedFields}
+								/>
+							))}
+						</div>
+					</AnimatePresence>
 				)}
 			</div>
 		</div>

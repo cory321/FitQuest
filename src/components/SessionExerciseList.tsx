@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { supabase, type SessionExercise } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -247,4 +247,3 @@ export function SessionExerciseList({
 		</Card>
 	);
 }
-

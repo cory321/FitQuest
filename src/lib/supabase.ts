@@ -41,7 +41,7 @@ export type TemplateExercise = {
 export type WorkoutSession = {
 	id: string;
 	workout_date: string;
-	template_id: string;
+	template_id: string | null;
 	template_name: string;
 	created_at: string;
 };

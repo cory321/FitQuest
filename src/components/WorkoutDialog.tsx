@@ -15,6 +15,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptics } from '@/lib/haptics';
+import { PressScale } from './animations/PressScale';
 
 interface WorkoutDialogProps {
 	open: boolean;
@@ -134,12 +137,14 @@ export function WorkoutDialog({
 
 	const handleBrowseTemplates = () => {
 		if (!selectedDate) return;
+		haptics.buttonPress();
 		// Close dialog and navigate to templates page
 		onOpenChange(false);
 		navigate(`/templates?date=${formatDateLocal(selectedDate)}`);
 	};
 
 	const handleOpenSession = (session: WorkoutSession) => {
+		haptics.buttonPress();
 		// Close dialog and navigate to session workout page
 		onOpenChange(false);
 		navigate(
@@ -175,121 +180,186 @@ export function WorkoutDialog({
 						)}
 
 						{/* Browse Templates Button */}
-						<div className="border-b pb-4">
-							<Button
-								onClick={handleBrowseTemplates}
-								className="w-full h-12 text-base font-semibold"
-								variant="outline"
-							>
-								<Dumbbell className="mr-2 h-5 w-5" />
-								Browse Workout Templates
-							</Button>
-						</div>
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="border-b pb-4"
+						>
+							<PressScale>
+								<Button
+									onClick={handleBrowseTemplates}
+									className="w-full h-12 text-base font-semibold"
+									variant="outline"
+								>
+									<Dumbbell className="mr-2 h-5 w-5" />
+									Browse Workout Templates
+								</Button>
+							</PressScale>
+						</motion.div>
 
 						{/* Workout Sessions from Templates */}
-						{sessions.length > 0 && (
-							<div className="space-y-3 mb-6">
-								<h3 className="font-semibold text-base flex items-center gap-2">
-									<span className="text-primary">🏋️</span>
-									Workout Sessions
-									<span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-										{sessions.length}
-									</span>
-								</h3>
-								{sessions.map((session) => (
-									<Card
-										key={session.id}
-										className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-primary/50"
-										onClick={() => handleOpenSession(session)}
-									>
-										<CardContent className="p-4 flex items-center justify-between">
-											<div className="flex-1">
-												<p className="font-semibold text-base text-primary">
-													{session.template_name}
-												</p>
-												<p className="text-sm text-muted-foreground mt-1">
-													Tap to start workout
-												</p>
-											</div>
-											<div className="flex items-center gap-2">
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={(e) => {
-														e.stopPropagation();
-														handleDeleteSession(session.id);
-													}}
-													className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
+						<AnimatePresence>
+							{sessions.length > 0 && (
+								<motion.div
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: 'auto' }}
+									exit={{ opacity: 0, height: 0 }}
+									className="space-y-3 mb-6"
+								>
+									<h3 className="font-semibold text-base flex items-center gap-2">
+										<span className="text-primary">🏋️</span>
+										Workout Sessions
+										<motion.span
+											initial={{ scale: 0 }}
+											animate={{ scale: 1 }}
+											className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full"
+										>
+											{sessions.length}
+										</motion.span>
+									</h3>
+									{sessions.map((session, index) => (
+										<motion.div
+											key={session.id}
+											initial={{ opacity: 0, x: -20 }}
+											animate={{ opacity: 1, x: 0 }}
+											exit={{ opacity: 0, x: 20 }}
+											transition={{ delay: index * 0.05 }}
+										>
+											<PressScale>
+												<Card
+													className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-primary/50"
+													onClick={() => handleOpenSession(session)}
 												>
-													<Trash2 className="h-5 w-5" />
-												</Button>
-												<ChevronRight className="h-5 w-5 text-muted-foreground" />
-											</div>
-										</CardContent>
-									</Card>
-								))}
-							</div>
-						)}
+													<CardContent className="p-4 flex items-center justify-between">
+														<div className="flex-1">
+															<p className="font-semibold text-base text-primary">
+																{session.template_name}
+															</p>
+															<p className="text-sm text-muted-foreground mt-1">
+																Tap to start workout
+															</p>
+														</div>
+														<div className="flex items-center gap-2">
+															<motion.div whileTap={{ scale: 0.9 }}>
+																<Button
+																	variant="ghost"
+																	size="sm"
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		haptics.warning();
+																		handleDeleteSession(session.id);
+																	}}
+																	className="h-10 w-10 p-0 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+																>
+																	<Trash2 className="h-5 w-5" />
+																</Button>
+															</motion.div>
+															<ChevronRight className="h-5 w-5 text-muted-foreground" />
+														</div>
+													</CardContent>
+												</Card>
+											</PressScale>
+										</motion.div>
+									))}
+								</motion.div>
+							)}
+						</AnimatePresence>
 
 						{/* Individual workouts */}
-						{dayWorkouts.length > 0 && (
-							<div className="space-y-3 mb-6">
-								<h3 className="font-semibold text-base flex items-center gap-2">
-									<span className="text-primary">📋</span>
-									Individual Workouts
-									<span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-										{dayWorkouts.length}
-									</span>
-								</h3>
-								{dayWorkouts.map((workout) => (
-									<Card
-										key={workout.id}
-										className="hover:shadow-md transition-shadow"
-									>
-										<CardContent className="p-4 flex items-start justify-between">
-											<div className="flex-1">
-												<p className="font-semibold text-base">
-													{workout.workout_name}
-												</p>
-												<div className="text-base text-muted-foreground mt-1">
-													{workout.reps && <span>{workout.reps} reps</span>}
-													{workout.reps && workout.weight_lbs && (
-														<span> • </span>
-													)}
-													{workout.weight_lbs && (
-														<span>{workout.weight_lbs} lbs</span>
-													)}
-												</div>
-											</div>
-											<Button
-												variant="ghost"
-												size="sm"
-												onClick={() => handleDelete(workout.id)}
-												className="ml-3 h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
-											>
-												<Trash2 className="h-5 w-5" />
-											</Button>
-										</CardContent>
-									</Card>
-								))}
-							</div>
-						)}
+						<AnimatePresence>
+							{dayWorkouts.length > 0 && (
+								<motion.div
+									initial={{ opacity: 0, height: 0 }}
+									animate={{ opacity: 1, height: 'auto' }}
+									exit={{ opacity: 0, height: 0 }}
+									className="space-y-3 mb-6"
+								>
+									<h3 className="font-semibold text-base flex items-center gap-2">
+										<span className="text-primary">📋</span>
+										Individual Workouts
+										<motion.span
+											initial={{ scale: 0 }}
+											animate={{ scale: 1 }}
+											className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full"
+										>
+											{dayWorkouts.length}
+										</motion.span>
+									</h3>
+									{dayWorkouts.map((workout, index) => (
+										<motion.div
+											key={workout.id}
+											initial={{ opacity: 0, x: -20 }}
+											animate={{ opacity: 1, x: 0 }}
+											exit={{ opacity: 0, x: 20 }}
+											transition={{ delay: index * 0.05 }}
+										>
+											<Card className="hover:shadow-md transition-shadow">
+												<CardContent className="p-4 flex items-start justify-between">
+													<div className="flex-1">
+														<p className="font-semibold text-base">
+															{workout.workout_name}
+														</p>
+														<div className="text-base text-muted-foreground mt-1">
+															{workout.reps && <span>{workout.reps} reps</span>}
+															{workout.reps && workout.weight_lbs && (
+																<span> • </span>
+															)}
+															{workout.weight_lbs && (
+																<span>{workout.weight_lbs} lbs</span>
+															)}
+														</div>
+													</div>
+													<motion.div whileTap={{ scale: 0.9 }}>
+														<Button
+															variant="ghost"
+															size="sm"
+															onClick={() => {
+																haptics.warning();
+																handleDelete(workout.id);
+															}}
+															className="ml-3 h-10 w-10 p-0 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors"
+														>
+															<Trash2 className="h-5 w-5" />
+														</Button>
+													</motion.div>
+												</CardContent>
+											</Card>
+										</motion.div>
+									))}
+								</motion.div>
+							)}
+						</AnimatePresence>
 
 						{/* Empty state */}
 						{sessions.length === 0 && dayWorkouts.length === 0 && (
-							<div className="text-center py-6 mb-6 bg-muted rounded-lg border-2 border-dashed border-border">
-								<p className="text-4xl mb-2">💪</p>
+							<motion.div
+								initial={{ opacity: 0, scale: 0.9 }}
+								animate={{ opacity: 1, scale: 1 }}
+								className="text-center py-6 mb-6 bg-muted rounded-lg border-2 border-dashed border-border"
+							>
+								<motion.p
+									animate={{ scale: [1, 1.1, 1] }}
+									transition={{ duration: 2, repeat: Infinity }}
+									className="text-4xl mb-2"
+								>
+									💪
+								</motion.p>
 								<p className="text-sm text-muted-foreground">
 									No workouts yet for this day
 								</p>
 								<p className="text-xs text-muted-foreground mt-1">
 									Browse templates or add an individual workout below!
 								</p>
-							</div>
+							</motion.div>
 						)}
 
 						{/* Add new workout form */}
-						<div className="border-t pt-4 mt-4">
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2 }}
+							className="border-t pt-4 mt-4"
+						>
 							<h3 className="font-semibold text-base mb-4 flex items-center gap-2">
 								<span>➕</span>
 								Add New Workout
@@ -342,15 +412,18 @@ export function WorkoutDialog({
 									</div>
 								</div>
 
-								<Button
-									type="submit"
-									className="w-full h-12 text-base font-semibold active:scale-95 transition-transform"
-									disabled={isSubmitting}
-								>
-									{isSubmitting ? 'Adding...' : '💪 Add Workout'}
-								</Button>
+								<PressScale>
+									<Button
+										type="submit"
+										className="w-full h-12 text-base font-semibold"
+										disabled={isSubmitting}
+										onClick={() => haptics.buttonPress()}
+									>
+										{isSubmitting ? 'Adding...' : '💪 Add Workout'}
+									</Button>
+								</PressScale>
 							</form>
-						</div>
+						</motion.div>
 					</div>
 				</DialogContent>
 			</Dialog>

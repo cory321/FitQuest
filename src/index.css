@@ -184,6 +184,29 @@ body {
 	transition:
 		background-color 0.3s ease,
 		color 0.3s ease;
+	overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--muted);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--primary);
+	border-radius: 4px;
+	transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--primary);
+	opacity: 0.8;
 }
 
 /* Smooth scrolling */
@@ -207,6 +230,92 @@ button,
 	select {
 		font-size: 16px !important;
 	}
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Gradient text utility */
+.gradient-text {
+	background: linear-gradient(135deg, var(--primary), #f59e0b);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Glow effect */
+.glow-primary {
+	box-shadow: 0 0 20px rgba(224, 93, 56, 0.3);
+}
+
+.dark .glow-primary {
+	box-shadow: 0 0 30px rgba(224, 93, 56, 0.5);
+}
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+.animated-gradient {
+	background: linear-gradient(
+		135deg,
+		rgba(224, 93, 56, 0.1),
+		rgba(245, 158, 11, 0.1),
+		rgba(16, 185, 129, 0.1)
+	);
+	background-size: 200% 200%;
+	animation: gradient-shift 10s ease infinite;
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+.shimmer {
+	background: linear-gradient(
+		90deg,
+		transparent,
+		rgba(255, 255, 255, 0.2),
+		transparent
+	);
+	background-size: 1000px 100%;
+	animation: shimmer 2s infinite;
+}
+
+/* Safe area insets for mobile */
+.safe-area-bottom {
+	padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+	border-radius: 4px;
 }
 
 /* React Big Calendar Theme Adjustments */
