@@ -394,6 +394,7 @@ export function TemplateBuilder({
 															</Label>
 															<Input
 																type="number"
+																inputMode="numeric"
 																min="1"
 																value={exercise.sets}
 																onChange={(e) =>
@@ -412,6 +413,7 @@ export function TemplateBuilder({
 															</Label>
 															<Input
 																type="number"
+																inputMode="numeric"
 																min="0"
 																placeholder="Optional"
 																value={exercise.target_reps || ''}
@@ -433,6 +435,7 @@ export function TemplateBuilder({
 															</Label>
 															<Input
 																type="number"
+																inputMode="decimal"
 																min="0"
 																step="0.5"
 																placeholder="Optional"

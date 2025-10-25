@@ -20,7 +20,14 @@ import { formatDateLocal, getWorkoutIntensity } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useGesture } from '@use-gesture/react';
 import { haptics } from '@/lib/haptics';
-import { RefreshCw, ChevronUp } from 'lucide-react';
+import {
+	RefreshCw,
+	ChevronUp,
+	Dumbbell,
+	ChevronLeft,
+	ChevronRight,
+} from 'lucide-react';
+import { Button } from './ui/button';
 
 const locales = {
 	'en-US': enUS,
@@ -33,6 +40,65 @@ const localizer = dateFnsLocalizer({
 	getDay,
 	locales,
 });
+
+// Custom Toolbar for calendar navigation
+const CustomToolbar = ({ date, onNavigate }: any) => {
+	const goToBack = () => {
+		haptics.buttonPress();
+		onNavigate('PREV');
+	};
+
+	const goToNext = () => {
+		haptics.buttonPress();
+		onNavigate('NEXT');
+	};
+
+	const goToToday = () => {
+		haptics.buttonPress();
+		onNavigate('TODAY');
+	};
+
+	const monthYear = format(date, 'MMM yyyy');
+
+	return (
+		<div className="flex items-center justify-between mb-4 px-2">
+			<motion.div whileTap={{ scale: 0.95 }}>
+				<Button
+					onClick={goToBack}
+					variant="outline"
+					size="icon"
+					className="h-10 w-10"
+				>
+					<ChevronLeft className="h-5 w-5" />
+				</Button>
+			</motion.div>
+
+			<h2 className="text-2xl sm:text-3xl font-bold">{monthYear}</h2>
+
+			<div className="flex items-center gap-2">
+				<motion.div whileTap={{ scale: 0.95 }}>
+					<Button
+						onClick={goToToday}
+						variant="outline"
+						className="h-10 px-3 text-sm font-medium"
+					>
+						Today
+					</Button>
+				</motion.div>
+				<motion.div whileTap={{ scale: 0.95 }}>
+					<Button
+						onClick={goToNext}
+						variant="outline"
+						size="icon"
+						className="h-10 w-10"
+					>
+						<ChevronRight className="h-5 w-5" />
+					</Button>
+				</motion.div>
+			</div>
+		</div>
+	);
+};
 
 // Custom component to display workout count on calendar dates
 const CustomDateHeader = ({
@@ -299,7 +365,8 @@ export function WorkoutCalendar() {
 					className="mb-3 sm:mb-4 flex items-start justify-between"
 				>
 					<div>
-						<h1 className="text-2xl sm:text-4xl font-bold font-heading tracking-tight">
+						<h1 className="text-2xl sm:text-4xl font-bold font-heading tracking-tight flex items-center gap-2">
+							<Dumbbell className="h-7 w-7 sm:h-9 sm:w-9 text-primary" />
 							FitQuest Workout Tracker
 						</h1>
 						<p className="text-sm sm:text-base text-muted-foreground mt-1">
@@ -332,36 +399,43 @@ export function WorkoutCalendar() {
 					</motion.div>
 				)}
 
-				{isLoading && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						className="text-center py-4"
-					>
-						<p className="text-muted-foreground">Loading workouts...</p>
-					</motion.div>
-				)}
-
 				{/* Calendar with swipe gesture */}
 				<div {...swipeBind()}>
 					<motion.div
 						initial={{ opacity: 0, scale: 0.95 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ duration: 0.3 }}
-						className="bg-card rounded-lg shadow-lg p-2 sm:p-4"
+						className="bg-card rounded-lg shadow-lg p-2 sm:p-4 relative overflow-hidden"
 						style={{ height: 'calc(100vh - 320px)', minHeight: '400px' }}
 					>
+						{/* Loading progress bar */}
+						{isLoading && (
+							<motion.div
+								initial={{ scaleX: 0 }}
+								animate={{ scaleX: 1 }}
+								transition={{ duration: 0.3 }}
+								className="absolute top-0 left-0 right-0 h-1 bg-primary origin-left z-50"
+							>
+								<motion.div
+									animate={{ x: ['0%', '100%'] }}
+									transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+									className="h-full w-1/3 bg-primary-foreground/30"
+								/>
+							</motion.div>
+						)}
 						<Calendar
 							localizer={localizer}
 							events={[]}
 							startAccessor="start"
 							endAccessor="end"
+							date={currentMonth}
 							onSelectSlot={handleSelectSlot}
 							onNavigate={handleNavigate}
 							selectable
 							views={['month']}
 							defaultView="month"
 							components={{
+								toolbar: CustomToolbar,
 								month: {
 									dateHeader: ({
 										date,

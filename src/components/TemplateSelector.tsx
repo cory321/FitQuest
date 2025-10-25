@@ -9,6 +9,7 @@ import {
 	Trash2,
 	Copy,
 	Plus,
+	ChevronDown,
 } from 'lucide-react';
 import {
 	supabase,
@@ -55,9 +56,25 @@ export function TemplateSelector() {
 	const [templateToDelete, setTemplateToDelete] =
 		useState<TemplateWithExercises | null>(null);
 	const [usageCount, setUsageCount] = useState<number>(0);
+	const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(
+		new Set()
+	);
 
 	// Determine mode: browse (with date) or manage (without date)
 	const isBrowseMode = !!selectedDate;
+
+	const toggleExercises = (templateId: string) => {
+		haptics.buttonPress();
+		setExpandedTemplates((prev) => {
+			const next = new Set(prev);
+			if (next.has(templateId)) {
+				next.delete(templateId);
+			} else {
+				next.add(templateId);
+			}
+			return next;
+		});
+	};
 
 	useEffect(() => {
 		fetchTemplates();
@@ -400,6 +417,29 @@ export function TemplateSelector() {
 												)}
 											</CardHeader>
 											<CardContent className="space-y-4">
+												{/* View Exercises Button */}
+												<PressScale>
+													<Button
+														variant="outline"
+														className="w-full"
+														onClick={() => toggleExercises(template.id)}
+													>
+														<motion.div
+															animate={{
+																rotate: expandedTemplates.has(template.id)
+																	? 180
+																	: 0,
+															}}
+															transition={{ duration: 0.2 }}
+															className="mr-2"
+														>
+															<ChevronDown className="h-4 w-4" />
+														</motion.div>
+														{expandedTemplates.has(template.id)
+															? 'Hide Exercises'
+															: 'View Exercises'}
+													</Button>
+												</PressScale>
 												{/* Action Buttons (Manage Mode Only) */}
 												{!isBrowseMode && (
 													<div className="flex gap-2 pb-4 border-b">
@@ -438,38 +478,54 @@ export function TemplateSelector() {
 													</div>
 												)}
 
-												{/* Exercise List */}
-												<div className="space-y-2">
-													{template.exercises.map((ex, idx) => (
+												{/* Exercise List - Accordion */}
+												<AnimatePresence>
+													{expandedTemplates.has(template.id) && (
 														<motion.div
-															key={ex.id}
-															initial={{ opacity: 0, x: -20 }}
-															animate={{ opacity: 1, x: 0 }}
-															transition={{ delay: index * 0.1 + idx * 0.05 }}
-															className="flex items-start gap-3 p-3 bg-muted rounded-lg"
+															initial={{ height: 0, opacity: 0 }}
+															animate={{ height: 'auto', opacity: 1 }}
+															exit={{ height: 0, opacity: 0 }}
+															transition={{ duration: 0.3 }}
+															className="overflow-hidden"
 														>
-															<span className="text-primary font-bold text-base flex-shrink-0 mt-0.5">
-																{idx + 1}.
-															</span>
-															<div className="flex-1 min-w-0">
-																<p className="font-semibold text-base">
-																	{ex.exercise_name}
-																</p>
-																<p className="text-sm text-muted-foreground mt-1">
-																	<span className="font-semibold">
-																		{ex.sets} sets
-																	</span>
-																	{(ex.target_reps || ex.target_weight) &&
-																		' × '}
-																	{ex.target_reps && `${ex.target_reps} reps`}
-																	{ex.target_reps && ex.target_weight && ', '}
-																	{ex.target_weight &&
-																		`${ex.target_weight} lbs`}
-																</p>
+															<div className="space-y-2 pt-2">
+																{template.exercises.map((ex, idx) => (
+																	<motion.div
+																		key={ex.id}
+																		initial={{ opacity: 0, x: -20 }}
+																		animate={{ opacity: 1, x: 0 }}
+																		exit={{ opacity: 0, x: -20 }}
+																		transition={{ delay: idx * 0.05 }}
+																		className="flex items-start gap-3 p-3 bg-muted rounded-lg"
+																	>
+																		<span className="text-primary font-bold text-base flex-shrink-0 mt-0.5">
+																			{idx + 1}.
+																		</span>
+																		<div className="flex-1 min-w-0">
+																			<p className="font-semibold text-base">
+																				{ex.exercise_name}
+																			</p>
+																			<p className="text-sm text-muted-foreground mt-1">
+																				<span className="font-semibold">
+																					{ex.sets} sets
+																				</span>
+																				{(ex.target_reps || ex.target_weight) &&
+																					' × '}
+																				{ex.target_reps &&
+																					`${ex.target_reps} reps`}
+																				{ex.target_reps &&
+																					ex.target_weight &&
+																					', '}
+																				{ex.target_weight &&
+																					`${ex.target_weight} lbs`}
+																			</p>
+																		</div>
+																	</motion.div>
+																))}
 															</div>
 														</motion.div>
-													))}
-												</div>
+													)}
+												</AnimatePresence>
 
 												{/* Apply Button (Browse Mode Only) */}
 												{isBrowseMode && selectedDate && (

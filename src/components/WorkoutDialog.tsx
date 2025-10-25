@@ -183,7 +183,7 @@ export function WorkoutDialog({
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							className="border-b pb-4"
+							className="pb-4"
 						>
 							<PressScale>
 								<Button
@@ -387,6 +387,7 @@ export function WorkoutDialog({
 										<Input
 											id="reps"
 											type="number"
+											inputMode="numeric"
 											placeholder=""
 											value={reps}
 											onChange={(e) => setReps(e.target.value)}
@@ -402,6 +403,7 @@ export function WorkoutDialog({
 										<Input
 											id="weight"
 											type="number"
+											inputMode="decimal"
 											step="0.1"
 											placeholder=""
 											value={weight}

@@ -201,6 +201,7 @@ export function SessionExerciseList({
 										<Input
 											id={`actual-reps-${exercise.id}`}
 											type="number"
+											inputMode="numeric"
 											placeholder="0"
 											value={exercise.actual_reps || ''}
 											onChange={(e) =>
@@ -221,6 +222,7 @@ export function SessionExerciseList({
 										<Input
 											id={`actual-weight-${exercise.id}`}
 											type="number"
+											inputMode="decimal"
 											step="0.1"
 											placeholder="0"
 											value={exercise.actual_weight || ''}
