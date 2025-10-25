@@ -1,0 +1,165 @@
+/* Calendar customization */
+.rbc-calendar {
+	font-family: inherit;
+}
+
+.rbc-date-cell {
+	text-align: center;
+	padding: 4px;
+	min-height: 60px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.rbc-date-cell:active {
+	background-color: #f0f9ff;
+}
+
+.rbc-off-range {
+	color: #9ca3af;
+}
+
+.rbc-today {
+	background-color: #dbeafe;
+	font-weight: 600;
+	position: relative;
+}
+
+.rbc-today::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border: 2px solid #3b82f6;
+	border-radius: 4px;
+	pointer-events: none;
+}
+
+.rbc-toolbar {
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.rbc-toolbar button {
+	color: #1e293b;
+	border: 1px solid #e2e8f0;
+	padding: 8px 16px;
+	border-radius: 6px;
+	background-color: white;
+	font-size: 14px;
+	font-weight: 500;
+	min-height: 44px;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.rbc-toolbar button:hover {
+	background-color: #f1f5f9;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rbc-toolbar button:active {
+	transform: translateY(0);
+}
+
+.rbc-toolbar button.rbc-active {
+	background-color: #3b82f6;
+	color: white;
+	border-color: #3b82f6;
+}
+
+.rbc-header {
+	padding: 12px 3px;
+	font-weight: 600;
+	border-bottom: 1px solid #e2e8f0;
+	font-size: 13px;
+}
+
+.rbc-month-view {
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.rbc-row {
+	min-height: 60px;
+}
+
+/* Touch feedback */
+.rbc-day-bg {
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+	touch-action: manipulation;
+}
+
+.rbc-day-bg:active {
+	background-color: #f0f9ff !important;
+}
+
+.rbc-date-cell > div {
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Workout badge animation */
+@keyframes badge-pop {
+	0% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	50% {
+		transform: scale(1.1);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.rbc-date-cell span[class*='bg-blue-600'] {
+	animation: badge-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+	.rbc-toolbar {
+		margin-bottom: 8px;
+	}
+
+	.rbc-toolbar button {
+		padding: 8px 14px;
+		font-size: 14px;
+		min-height: 44px;
+		flex: 1;
+		max-width: 120px;
+	}
+
+	.rbc-toolbar-label {
+		font-size: 16px;
+		font-weight: 600;
+		flex: 1 1 100%;
+		text-align: center;
+		order: -1;
+		margin-bottom: 4px;
+	}
+
+	.rbc-header {
+		font-size: 12px;
+		padding: 10px 2px;
+		font-weight: 700;
+	}
+
+	.rbc-date-cell {
+		min-height: 80px;
+		padding: 4px 2px;
+	}
+
+	.rbc-row {
+		min-height: 80px;
+	}
+
+	.rbc-month-view {
+		font-size: 14px;
+	}
+}
