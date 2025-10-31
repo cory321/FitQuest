@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Clock } from 'lucide-react';
 import { supabase, type SessionExercise } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
@@ -25,12 +25,23 @@ export function SessionWorkoutPage() {
 	);
 	const [showCelebration, setShowCelebration] = useState(false);
 	const [lastCompletedCount, setLastCompletedCount] = useState(0);
+	const [startTime] = useState(Date.now());
+	const [elapsedTime, setElapsedTime] = useState(0);
 
 	useEffect(() => {
 		if (sessionId) {
 			fetchExercises();
 		}
 	}, [sessionId]);
+
+	// Duration tracking
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setElapsedTime(Date.now() - startTime);
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [startTime]);
 
 	const fetchExercises = async () => {
 		if (!sessionId) return;
@@ -201,6 +212,19 @@ export function SessionWorkoutPage() {
 	const progressPercentage =
 		totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+	// Format duration as MM:SS or HH:MM:SS
+	const formatDuration = (ms: number) => {
+		const totalSeconds = Math.floor(ms / 1000);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+
+		if (hours > 0) {
+			return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+		}
+		return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+	};
+
 	// Check for workout completion
 	useEffect(() => {
 		if (
@@ -275,6 +299,18 @@ export function SessionWorkoutPage() {
 							<h1 className="text-xl sm:text-3xl font-bold font-heading tracking-tight truncate">
 								{sessionName}
 							</h1>
+							{/* Duration Timer */}
+							<div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+								<Clock className="h-4 w-4" />
+								<motion.span
+									key={formatDuration(elapsedTime)}
+									initial={{ opacity: 0.5 }}
+									animate={{ opacity: 1 }}
+									className="font-mono font-semibold"
+								>
+									{formatDuration(elapsedTime)}
+								</motion.span>
+							</div>
 						</div>
 						<ThemeToggle />
 						<motion.div whileTap={{ scale: 0.9 }}>

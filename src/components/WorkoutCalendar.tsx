@@ -16,6 +16,7 @@ import { supabase, type Workout, type WorkoutSession } from '@/lib/supabase';
 import { WorkoutDialog } from './WorkoutDialog';
 import { ThemeToggle } from './ThemeToggle';
 import { StreakDisplay } from './StreakDisplay';
+import { RecentTemplates } from './RecentTemplates';
 import { formatDateLocal, getWorkoutIntensity } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useGesture } from '@use-gesture/react';
@@ -380,6 +381,9 @@ export function WorkoutCalendar() {
 				<div className="mb-4">
 					<StreakDisplay refreshTrigger={streakRefreshTrigger} />
 				</div>
+
+				{/* Recent Templates */}
+				<RecentTemplates />
 
 				{error && (
 					<motion.div

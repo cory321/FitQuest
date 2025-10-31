@@ -1,11 +1,15 @@
 import { useStreaks } from '@/hooks/useStreaks';
 import { ThemeToggle } from './ThemeToggle';
 import { motion } from 'framer-motion';
-import { Trophy, TrendingUp, Calendar, Award, Flame } from 'lucide-react';
+import { Trophy, TrendingUp, Calendar, Award, Flame, Dumbbell } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { EmptyState } from './EmptyState';
+import { useNavigate } from 'react-router-dom';
+import { haptics } from '@/lib/haptics';
 
 export function StatsPage() {
 	const { streakData, isLoading } = useStreaks();
+	const navigate = useNavigate();
 
 	const stats = [
 		{
@@ -68,6 +72,26 @@ export function StatsPage() {
 					<div className="text-center py-12">
 						<p className="text-muted-foreground">Loading stats...</p>
 					</div>
+				) : streakData.totalWorkouts === 0 ? (
+					<EmptyState
+						icon={Dumbbell}
+						title="No workouts yet!"
+						description="Start your fitness journey by logging your first workout. Track your progress and build streaks to stay motivated!"
+						action={{
+							label: 'Log Your First Workout',
+							onClick: () => {
+								haptics.buttonPress();
+								navigate('/');
+							},
+						}}
+						secondaryAction={{
+							label: 'Browse Templates',
+							onClick: () => {
+								haptics.buttonPress();
+								navigate('/templates');
+							},
+						}}
+					/>
 				) : (
 					<motion.div
 						initial={{ opacity: 0 }}
