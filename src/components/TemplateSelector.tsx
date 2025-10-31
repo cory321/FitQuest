@@ -10,6 +10,7 @@ import {
 	Copy,
 	Plus,
 	ChevronDown,
+	Layers,
 } from 'lucide-react';
 import {
 	supabase,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThemeToggle } from './ThemeToggle';
 import { TemplateBuilder } from './TemplateBuilder';
+import { EmptyState } from './EmptyState';
 import { formatDateLocal, parseDateLocal } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -244,6 +246,30 @@ export function TemplateSelector() {
 		setError(null);
 
 		try {
+			// Fetch previous exercise data for smart defaults
+			const exerciseNames = template.exercises.map((ex) => ex.exercise_name);
+			const { data: previousExercises } = await supabase
+				.from('session_exercises')
+				.select('exercise_name, actual_reps, actual_weight, created_at')
+				.in('exercise_name', exerciseNames)
+				.eq('completed', true)
+				.order('created_at', { ascending: false })
+				.limit(100);
+
+			// Create a map of most recent actual values per exercise
+			const previousDataMap = new Map<
+				string,
+				{ reps: number | null; weight: number | null }
+			>();
+			previousExercises?.forEach((ex) => {
+				if (!previousDataMap.has(ex.exercise_name)) {
+					previousDataMap.set(ex.exercise_name, {
+						reps: ex.actual_reps,
+						weight: ex.actual_weight,
+					});
+				}
+			});
+
 			// Create a new workout session
 			const { data: session, error: sessionError } = await supabase
 				.from('workout_sessions')
@@ -263,12 +289,16 @@ export function TemplateSelector() {
 			let orderIndex = 0;
 
 			template.exercises.forEach((ex) => {
+				const previousData = previousDataMap.get(ex.exercise_name);
 				for (let setNum = 1; setNum <= ex.sets; setNum++) {
 					sessionExercises.push({
 						session_id: session.id,
 						exercise_name: ex.exercise_name,
 						target_reps: ex.target_reps,
 						target_weight: ex.target_weight,
+						// Smart defaults: pre-fill actual values from last time
+						actual_reps: previousData?.reps || null,
+						actual_weight: previousData?.weight || null,
 						set_number: setNum,
 						total_sets: ex.sets,
 						order_index: orderIndex++,
@@ -359,13 +389,44 @@ export function TemplateSelector() {
 						<p className="text-muted-foreground">Loading templates...</p>
 					</motion.div>
 				) : templates.length === 0 ? (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						className="text-center py-12"
-					>
-						<p className="text-muted-foreground">No templates available</p>
-					</motion.div>
+					<EmptyState
+						icon={Layers}
+						title={
+							isBrowseMode
+								? 'No templates yet'
+								: 'Create your first workout template'
+						}
+						description={
+							isBrowseMode
+								? 'No workout templates have been created yet. Go to Templates to create your first one, then come back here to apply it!'
+								: 'Design reusable workout routines with exercises, sets, reps, and weights. Templates make it easy to start structured workouts in seconds!'
+						}
+						action={
+							isBrowseMode
+								? {
+										label: 'Go to Templates',
+										onClick: () => {
+											haptics.buttonPress();
+											navigate('/templates');
+										},
+								  }
+								: {
+										label: 'Create Template',
+										onClick: handleCreateNew,
+								  }
+						}
+						secondaryAction={
+							isBrowseMode
+								? {
+										label: 'Back to Calendar',
+										onClick: () => {
+											haptics.buttonPress();
+											navigate('/');
+										},
+								  }
+								: undefined
+						}
+					/>
 				) : (
 					<div className="space-y-4">
 						{/* Create New Button (only in manage mode) */}
