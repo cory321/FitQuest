@@ -20,12 +20,18 @@ interface Exercise {
 
 interface TemplateBuilderProps {
 	templateId?: string | null;
+	initialData?: {
+		name: string;
+		description: string;
+		exercises: Exercise[];
+	} | null;
 	onSave: () => void;
 	onCancel: () => void;
 }
 
 export function TemplateBuilder({
 	templateId,
+	initialData,
 	onSave,
 	onCancel,
 }: TemplateBuilderProps) {
@@ -39,8 +45,18 @@ export function TemplateBuilder({
 	useEffect(() => {
 		if (templateId) {
 			loadTemplate();
+		} else if (initialData) {
+			// Populate form with initial data from JSON import
+			setTemplateName(initialData.name);
+			setDescription(initialData.description);
+			setExercises(
+				initialData.exercises.map((ex) => ({
+					...ex,
+					id: `temp-${Date.now()}-${ex.order_index}`,
+				}))
+			);
 		}
-	}, [templateId]);
+	}, [templateId, initialData]);
 
 	const loadTemplate = async () => {
 		if (!templateId) return;

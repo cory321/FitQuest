@@ -27,7 +27,17 @@ interface ExerciseComparison {
 }
 
 const calculateVolume = (reps: number | null, weight: number | null): number => {
-	return (reps || 0) * (weight || 0);
+	const repsValue = reps || 0;
+	const weightValue = weight || 0;
+	
+	// If weight is 0 or null, this is a bodyweight exercise
+	// Track progress based on reps only (bodyweight is constant)
+	// If weight > 0, multiply reps × weight for total volume
+	if (weightValue === 0) {
+		return repsValue; // Bodyweight exercise: just count reps
+	}
+	
+	return repsValue * weightValue; // Weighted exercise: reps × weight
 };
 
 const calculateImprovement = (
@@ -39,6 +49,7 @@ const calculateImprovement = (
 	const prevVolume = calculateVolume(prevReps, prevWeight);
 	const currVolume = calculateVolume(currReps, currWeight);
 
+	// Handle case where no previous data exists (first time doing exercise)
 	if (prevVolume === 0) {
 		return { improvement: currVolume > 0 ? 100 : 0, improved: currVolume > 0 };
 	}
