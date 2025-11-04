@@ -1,3 +1,7 @@
 {
-	"setup-worktree": ["npm install"]
+	"setup-worktree": ["npm install"],
+	"worktree.cleanup.enabled": true,
+	"worktree.cleanup.intervalHours": 6,
+	"worktree.cleanup.retentionDays": 7,
+	"worktree.cleanup.maxSizeGB": 0
 }

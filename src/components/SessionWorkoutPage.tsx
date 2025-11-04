@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trash2, CheckCircle2 } from 'lucide-react';
 import { supabase, type SessionExercise } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from './ThemeToggle';
 import { WorkoutComplete } from './celebrations/WorkoutComplete';
+import { WorkoutSummary } from './celebrations/WorkoutSummary';
+import { ConfettiEffect } from './celebrations/ConfettiEffect';
 import { ExerciseCard } from './ExerciseCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -16,6 +18,7 @@ export function SessionWorkoutPage() {
 	const sessionName = searchParams.get('name') || 'Workout Session';
 
 	const [exercises, setExercises] = useState<SessionExercise[]>([]);
+	const [previousExercises, setPreviousExercises] = useState<SessionExercise[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [savingFields, setSavingFields] = useState<Set<string>>(new Set());
@@ -24,6 +27,8 @@ export function SessionWorkoutPage() {
 		new Map()
 	);
 	const [showCelebration, setShowCelebration] = useState(false);
+	const [showSummary, setShowSummary] = useState(false);
+	const [showConfetti, setShowConfetti] = useState(false);
 	const [lastCompletedCount, setLastCompletedCount] = useState(0);
 
 	useEffect(() => {
@@ -38,6 +43,7 @@ export function SessionWorkoutPage() {
 		setIsLoading(true);
 		setError(null);
 		try {
+			// Fetch current session exercises
 			const { data, error: fetchError } = await supabase
 				.from('session_exercises')
 				.select('*')
@@ -46,6 +52,41 @@ export function SessionWorkoutPage() {
 
 			if (fetchError) throw fetchError;
 			setExercises(data || []);
+
+			// Fetch current session to get template_id and date
+			const { data: currentSession, error: sessionError } = await supabase
+				.from('workout_sessions')
+				.select('template_id, workout_date')
+				.eq('id', sessionId)
+				.single();
+
+			if (sessionError) throw sessionError;
+
+			// Fetch previous session with same template (if template_id exists)
+			if (currentSession?.template_id) {
+				const { data: previousSession, error: prevSessionError } = await supabase
+					.from('workout_sessions')
+					.select('id')
+					.eq('template_id', currentSession.template_id)
+					.lt('workout_date', currentSession.workout_date)
+					.order('workout_date', { ascending: false })
+					.limit(1)
+					.single();
+
+				// It's okay if there's no previous session
+				if (!prevSessionError && previousSession) {
+					// Fetch exercises from previous session
+					const { data: prevExercises, error: prevExError } = await supabase
+						.from('session_exercises')
+						.select('*')
+						.eq('session_id', previousSession.id)
+						.order('order_index');
+
+					if (!prevExError) {
+						setPreviousExercises(prevExercises || []);
+					}
+				}
+			}
 		} catch (err) {
 			console.error('Error fetching exercises:', err);
 			setError('Failed to load exercises');
@@ -232,6 +273,17 @@ export function SessionWorkoutPage() {
 		updateExercise(exercise.id, fieldKey, { actual_reps: newReps });
 	};
 
+	const handleCompleteWorkout = () => {
+		haptics.celebration();
+		// Show summary immediately
+		setShowSummary(true);
+		
+		// Burst confetti on top of the summary after a brief delay
+		setTimeout(() => {
+			setShowConfetti(true);
+		}, 200);
+	};
+
 	if (isLoading) {
 		return (
 			<div className="min-h-screen bg-background flex items-center justify-center">
@@ -242,11 +294,26 @@ export function SessionWorkoutPage() {
 
 	return (
 		<div className="min-h-screen bg-background pb-20">
+			{/* Confetti Effect */}
+			<ConfettiEffect active={showConfetti} />
+
 			{/* Celebration Modal */}
 			<WorkoutComplete
 				show={showCelebration}
 				exerciseCount={totalCount}
 				onDismiss={() => setShowCelebration(false)}
+			/>
+
+			{/* Workout Summary Modal */}
+			<WorkoutSummary
+				show={showSummary}
+				currentExercises={exercises}
+				previousExercises={previousExercises}
+				onDismiss={() => {
+					setShowSummary(false);
+					setShowConfetti(false);
+					navigate('/');
+				}}
 			/>
 
 			{/* Header */}
@@ -353,24 +420,55 @@ export function SessionWorkoutPage() {
 				) : (
 					<AnimatePresence>
 						<div className="space-y-3">
-							{exercises.map((exercise, index) => (
-								<ExerciseCard
-									key={exercise.id}
-									exercise={exercise}
-									index={index}
-									onToggleComplete={() => toggleCompleted(exercise)}
-									onUpdateReps={(value) => updateActualReps(exercise, value)}
-									onUpdateWeight={(value) =>
-										updateActualWeight(exercise, value)
-									}
-									onAdjustReps={(delta) => adjustReps(exercise, delta)}
-									onAdjustWeight={(delta) => adjustWeight(exercise, delta)}
-									savingFields={savingFields}
-									savedFields={savedFields}
-								/>
-							))}
+							{exercises.map((exercise, index) => {
+								// Find matching previous exercise by name and set number
+								const previousExercise = previousExercises.find(
+									(prev) =>
+										prev.exercise_name === exercise.exercise_name &&
+										prev.set_number === exercise.set_number
+								);
+
+								return (
+									<ExerciseCard
+										key={exercise.id}
+										exercise={exercise}
+										previousExercise={previousExercise}
+										index={index}
+										onToggleComplete={() => toggleCompleted(exercise)}
+										onUpdateReps={(value) => updateActualReps(exercise, value)}
+										onUpdateWeight={(value) =>
+											updateActualWeight(exercise, value)
+										}
+										onAdjustReps={(delta) => adjustReps(exercise, delta)}
+										onAdjustWeight={(delta) => adjustWeight(exercise, delta)}
+										savingFields={savingFields}
+										savedFields={savedFields}
+									/>
+								);
+							})}
 						</div>
 					</AnimatePresence>
+				)}
+
+				{/* Complete Workout Button */}
+				{exercises.length > 0 && (
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ delay: 0.3 }}
+						className="mt-6 sticky bottom-4 z-10"
+					>
+						<Button
+							onClick={handleCompleteWorkout}
+							className="w-full h-14 text-lg font-bold shadow-lg"
+							size="lg"
+						>
+							<CheckCircle2 className="mr-2 h-6 w-6" />
+							{completedCount === totalCount && totalCount > 0
+								? 'Complete Workout & View Summary'
+								: `Finish Workout (${completedCount}/${totalCount} completed)`}
+						</Button>
+					</motion.div>
 				)}
 			</div>
 		</div>

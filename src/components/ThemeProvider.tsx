@@ -11,7 +11,16 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
 	const [theme, setTheme] = useState<Theme>(() => {
-		// Check localStorage first
+		// Check if class was already applied by blocking script
+		const root = document.documentElement;
+		if (root.classList.contains('dark')) {
+			return 'dark';
+		}
+		if (root.classList.contains('light')) {
+			return 'light';
+		}
+
+		// Fallback: Check localStorage first
 		const storedTheme = localStorage.getItem('theme') as Theme | null;
 		if (storedTheme) {
 			return storedTheme;
@@ -29,6 +38,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 		root.classList.remove('light', 'dark');
 		root.classList.add(theme);
 		localStorage.setItem('theme', theme);
+
+		// Update meta theme-color for mobile browsers
+		let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+		if (!metaThemeColor) {
+			metaThemeColor = document.createElement('meta');
+			metaThemeColor.setAttribute('name', 'theme-color');
+			document.head.appendChild(metaThemeColor);
+		}
+
+		// Set theme color based on current theme
+		const bgColor = theme === 'dark' ? 'rgb(15, 23, 42)' : 'rgb(245, 247, 250)';
+		metaThemeColor.setAttribute('content', bgColor);
 	}, [theme]);
 
 	const toggleTheme = () => {

@@ -9,7 +9,22 @@
 		/>
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent"
+		/>
+		<meta name="color-scheme" content="light dark" />
+		<script>
+			// Apply theme immediately to prevent flash
+			(function () {
+				const storedTheme = localStorage.getItem('theme');
+				const prefersDark = window.matchMedia(
+					'(prefers-color-scheme: dark)'
+				).matches;
+				const theme = storedTheme || (prefersDark ? 'dark' : 'light');
+				document.documentElement.classList.add(theme);
+			})();
+		</script>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link

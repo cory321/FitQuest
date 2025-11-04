@@ -1,6 +1,8 @@
 @import 'tailwindcss';
+@config '../tailwind.config.js';
 
 :root {
+	color-scheme: light;
 	--background: rgb(245, 247, 250);
 	--foreground: rgb(15, 23, 42);
 	--card: rgb(255, 255, 255);
@@ -64,6 +66,7 @@
 }
 
 .dark {
+	color-scheme: dark;
 	--background: rgb(15, 23, 42);
 	--foreground: rgb(248, 250, 252);
 	--card: rgb(30, 41, 59);

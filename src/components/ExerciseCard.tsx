@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 
 interface ExerciseCardProps {
 	exercise: SessionExercise;
+	previousExercise?: SessionExercise;
 	index: number;
 	onToggleComplete: () => void;
 	onUpdateReps: (value: string) => void;
@@ -18,6 +19,7 @@ interface ExerciseCardProps {
 
 export function ExerciseCard({
 	exercise,
+	previousExercise,
 	index,
 	onToggleComplete,
 	onUpdateReps,
@@ -98,6 +100,19 @@ export function ExerciseCard({
 								{exercise.target_weight && ` ${exercise.target_weight} lbs`}
 								{!exercise.target_reps && !exercise.target_weight && ' -'}
 							</div>
+							{/* Previous Session Values */}
+							{previousExercise && (previousExercise.actual_reps || previousExercise.actual_weight) && (
+								<motion.div
+									initial={{ opacity: 0, y: -5 }}
+									animate={{ opacity: 1, y: 0 }}
+									className="text-sm text-primary/70 dark:text-primary/60 mt-1 ml-7 font-medium"
+								>
+									<span className="text-xs">Last time:</span>
+									{previousExercise.actual_weight && ` ${previousExercise.actual_weight} lbs`}
+									{previousExercise.actual_weight && previousExercise.actual_reps && ' × '}
+									{previousExercise.actual_reps && `${previousExercise.actual_reps} reps`}
+								</motion.div>
+							)}
 						</div>
 					</div>
 

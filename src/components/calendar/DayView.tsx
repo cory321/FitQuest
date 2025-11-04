@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Trash2, Dumbbell, ChevronRight, Plus } from 'lucide-react';
+import { Trash2, Dumbbell, ChevronRight, Plus, BookOpen, FilePlus } from 'lucide-react';
 import { supabase, type Workout, type WorkoutSession } from '@/lib/supabase';
 import { formatDateLocal } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -156,44 +156,54 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 						? 'No workouts yet'
 						: `${totalWorkouts} workout${totalWorkouts === 1 ? '' : 's'}`}
 				</p>
-			</div>
+		</div>
 
-			{error && (
-				<motion.div
-					initial={{ opacity: 0, height: 0 }}
-					animate={{ opacity: 1, height: 'auto' }}
-					className="bg-red-50 dark:bg-red-950/40 border-2 border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 px-4 py-3 rounded-lg text-sm"
-				>
-					{error}
-				</motion.div>
-			)}
+		{error && (
+			<motion.div
+				initial={{ opacity: 0, height: 0 }}
+				animate={{ opacity: 1, height: 'auto' }}
+				className="bg-red-50 dark:bg-red-950/40 border-2 border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 px-4 py-3 rounded-lg text-sm"
+			>
+				{error}
+			</motion.div>
+		)}
 
-			{/* Quick Actions */}
-			<div className="grid grid-cols-2 gap-3">
+		{/* Quick Actions - Empty State */}
+		{totalWorkouts === 0 && (
+			<div className="flex flex-col gap-3">
 				<PressScale>
 					<Button
 						onClick={handleBrowseTemplates}
-						className="h-14 text-base font-semibold"
+						className="h-14 text-base font-semibold w-full"
 						variant="outline"
 					>
-						<Dumbbell className="mr-2 h-5 w-5" />
-						Templates
+						<BookOpen className="mr-2 h-5 w-5" />
+						Browse Templates
 					</Button>
 				</PressScale>
+				<Button
+					disabled
+					className="h-14 text-base font-semibold w-full"
+					variant="outline"
+				>
+					<FilePlus className="mr-2 h-5 w-5" />
+					Create Template
+				</Button>
 				<PressScale>
 					<Button
 						onClick={() => {
 							haptics.buttonPress();
 							setShowAddForm(!showAddForm);
 						}}
-						className="h-14 text-base font-semibold"
+						className="h-14 text-base font-semibold w-full"
 						variant={showAddForm ? 'secondary' : 'default'}
 					>
 						<Plus className="mr-2 h-5 w-5" />
-						{showAddForm ? 'Cancel' : 'Add Workout'}
+						Add Workout Item
 					</Button>
 				</PressScale>
 			</div>
+		)}
 
 			{/* Add Workout Form */}
 			<AnimatePresence>
@@ -406,29 +416,44 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 				)}
 			</AnimatePresence>
 
-			{/* Empty state */}
-			{sessions.length === 0 && dayWorkouts.length === 0 && !showAddForm && (
-				<motion.div
-					initial={{ opacity: 0, scale: 0.9 }}
-					animate={{ opacity: 1, scale: 1 }}
-					className="text-center py-12 bg-muted rounded-xl border-2 border-dashed border-border"
+	{/* Quick Actions - Below Workouts */}
+	{totalWorkouts > 0 && (
+		<div className="flex flex-col gap-3">
+			<PressScale>
+				<Button
+					onClick={handleBrowseTemplates}
+					className="h-14 text-base font-semibold w-full"
+					variant="outline"
 				>
-					<motion.p
-						animate={{ scale: [1, 1.1, 1] }}
-						transition={{ duration: 2, repeat: Infinity }}
-						className="text-6xl mb-3"
-					>
-						💪
-					</motion.p>
-					<p className="text-base text-muted-foreground font-medium">
-						No workouts yet for this day
-					</p>
-					<p className="text-sm text-muted-foreground mt-2">
-						Browse templates or add a workout to get started!
-					</p>
-				</motion.div>
-			)}
+					<BookOpen className="mr-2 h-5 w-5" />
+					Browse Templates
+				</Button>
+			</PressScale>
+			<Button
+				disabled
+				className="h-14 text-base font-semibold w-full"
+				variant="outline"
+			>
+				<FilePlus className="mr-2 h-5 w-5" />
+				Create Template
+			</Button>
+			<PressScale>
+				<Button
+					onClick={() => {
+						haptics.buttonPress();
+						setShowAddForm(!showAddForm);
+					}}
+					className="h-14 text-base font-semibold w-full"
+					variant={showAddForm ? 'secondary' : 'default'}
+				>
+					<Plus className="mr-2 h-5 w-5" />
+					Add Workout Item
+				</Button>
+			</PressScale>
 		</div>
-	);
+	)}
+
+	</div>
+);
 });
 

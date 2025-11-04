@@ -245,8 +245,8 @@ export function WorkoutCalendar() {
 					return action === 'PREV'
 						? subWeeks(prevDate, 1)
 						: addWeeks(prevDate, 1);
-				case 'day':
-					return action === 'PREV' ? subDays(prevDate, 1) : addDays(prevDate, 1);
+			case 'day':
+				return action === 'PREV' ? subDays(prevDate, 1) : addDays(prevDate, 1);
 			}
 		});
 	};

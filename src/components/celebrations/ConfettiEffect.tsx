@@ -11,7 +11,7 @@ export function ConfettiEffect({ active, onComplete }: ConfettiEffectProps) {
 		width: window.innerWidth,
 		height: window.innerHeight,
 	});
-	const [pieces, setPieces] = useState(200);
+	const [pieces, setPieces] = useState(0);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -27,34 +27,39 @@ export function ConfettiEffect({ active, onComplete }: ConfettiEffectProps) {
 
 	useEffect(() => {
 		if (active) {
-			setPieces(200);
+			setPieces(400); // More dramatic burst!
 			// Gradually reduce pieces for fade out effect
 			const timeout = setTimeout(() => {
 				setPieces(0);
 				if (onComplete) {
 					setTimeout(onComplete, 1000);
 				}
-			}, 3000);
+			}, 4000); // Let it run a bit longer
 			return () => clearTimeout(timeout);
+		} else {
+			setPieces(0);
 		}
 	}, [active, onComplete]);
 
 	if (!active) return null;
 
 	return (
-		<Confetti
-			width={dimensions.width}
-			height={dimensions.height}
-			numberOfPieces={pieces}
-			recycle={false}
-			colors={[
-				'#E05D38',
-				'#F59E0B',
-				'#10B981',
-				'#3B82F6',
-				'#8B5CF6',
-				'#EC4899',
-			]}
-		/>
+		<div className="fixed inset-0 pointer-events-none z-[9999]">
+			<Confetti
+				width={dimensions.width}
+				height={dimensions.height}
+				numberOfPieces={pieces}
+				recycle={false}
+				gravity={0.3}
+				colors={[
+					'#E05D38',
+					'#F59E0B',
+					'#10B981',
+					'#3B82F6',
+					'#8B5CF6',
+					'#EC4899',
+				]}
+			/>
+		</div>
 	);
 }
