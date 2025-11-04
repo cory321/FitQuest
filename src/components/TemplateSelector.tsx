@@ -10,6 +10,7 @@ import {
 	Copy,
 	Plus,
 	ChevronDown,
+	FileJson,
 } from 'lucide-react';
 import {
 	supabase,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ThemeToggle } from './ThemeToggle';
 import { TemplateBuilder } from './TemplateBuilder';
+import { JsonTemplateImport } from './JsonTemplateImport';
 import { formatDateLocal, parseDateLocal } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -52,6 +54,12 @@ export function TemplateSelector() {
 	const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
 		null
 	);
+	const [showJsonImport, setShowJsonImport] = useState(false);
+	const [initialBuilderData, setInitialBuilderData] = useState<{
+		name: string;
+		description: string;
+		exercises: any[];
+	} | null>(null);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [templateToDelete, setTemplateToDelete] =
 		useState<TemplateWithExercises | null>(null);
@@ -222,18 +230,37 @@ export function TemplateSelector() {
 	const handleCreateNew = () => {
 		haptics.buttonPress();
 		setEditingTemplateId(null);
+		setInitialBuilderData(null);
+		setShowBuilder(true);
+	};
+
+	const handleJsonImportClick = () => {
+		haptics.buttonPress();
+		setShowJsonImport(true);
+	};
+
+	const handleJsonImport = (data: {
+		name: string;
+		description: string;
+		exercises: any[];
+	}) => {
+		setInitialBuilderData(data);
+		setShowJsonImport(false);
+		setEditingTemplateId(null);
 		setShowBuilder(true);
 	};
 
 	const handleBuilderSave = () => {
 		setShowBuilder(false);
 		setEditingTemplateId(null);
+		setInitialBuilderData(null);
 		fetchTemplates();
 	};
 
 	const handleBuilderCancel = () => {
 		setShowBuilder(false);
 		setEditingTemplateId(null);
+		setInitialBuilderData(null);
 	};
 
 	const applyTemplate = async (template: TemplateWithExercises) => {
@@ -298,6 +325,7 @@ export function TemplateSelector() {
 		return (
 			<TemplateBuilder
 				templateId={editingTemplateId}
+				initialData={initialBuilderData}
 				onSave={handleBuilderSave}
 				onCancel={handleBuilderCancel}
 			/>
@@ -373,6 +401,7 @@ export function TemplateSelector() {
 							<motion.div
 								initial={{ opacity: 0, y: -10 }}
 								animate={{ opacity: 1, y: 0 }}
+								className="space-y-3"
 							>
 								<PressScale>
 									<Button
@@ -382,6 +411,17 @@ export function TemplateSelector() {
 									>
 										<Plus className="mr-2 h-5 w-5" />
 										Create New Template
+									</Button>
+								</PressScale>
+								<PressScale>
+									<Button
+										onClick={handleJsonImportClick}
+										variant="outline"
+										className="w-full h-12 text-base"
+										size="lg"
+									>
+										<FileJson className="mr-2 h-5 w-5" />
+										Import from JSON
 									</Button>
 								</PressScale>
 							</motion.div>
@@ -605,6 +645,13 @@ export function TemplateSelector() {
 						</div>
 					</DialogContent>
 				</Dialog>
+
+				{/* JSON Import Dialog */}
+				<JsonTemplateImport
+					open={showJsonImport}
+					onOpenChange={setShowJsonImport}
+					onImport={handleJsonImport}
+				/>
 			</div>
 		</div>
 	);
