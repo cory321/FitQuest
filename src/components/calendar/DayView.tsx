@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Trash2, Dumbbell, ChevronRight, Plus, BookOpen, FilePlus } from 'lucide-react';
+import { Trash2, Dumbbell, ChevronRight, Plus, BookOpen, FilePlus, CheckCircle2 } from 'lucide-react';
 import { supabase, type Workout, type WorkoutSession } from '@/lib/supabase';
 import { formatDateLocal } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -313,17 +313,36 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 							>
 								<PressScale>
 									<Card
-										className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary/50"
+										className={`hover:shadow-lg transition-shadow cursor-pointer border-2 ${
+											session.completed
+												? 'bg-emerald-50 dark:bg-lime-950/30 border-emerald-500 dark:border-lime-500 hover:border-emerald-600 dark:hover:border-lime-600'
+												: 'hover:border-primary/50'
+										}`}
 										onClick={() => handleOpenSession(session)}
 									>
 										<CardContent className="p-4 flex items-center justify-between min-h-[60px]">
-											<div className="flex-1">
-												<p className="font-semibold text-lg text-primary">
-													{session.template_name}
-												</p>
-												<p className="text-sm text-muted-foreground mt-1">
-													Tap to start workout
-												</p>
+											<div className="flex items-center gap-3 flex-1">
+												{session.completed && (
+													<div className="flex-shrink-0">
+														<CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-lime-400" />
+													</div>
+												)}
+												<div className="flex-1 min-w-0">
+													<p className={`font-semibold text-lg ${
+														session.completed
+															? 'text-emerald-700 dark:text-lime-400'
+															: 'text-primary'
+													}`}>
+														{session.template_name}
+													</p>
+													<p className={`text-sm mt-1 ${
+														session.completed
+															? 'text-emerald-700 dark:text-lime-500'
+															: 'text-muted-foreground'
+													}`}>
+														{session.completed ? 'Workout completed ✓' : 'Tap to start workout'}
+													</p>
+												</div>
 											</div>
 											<div className="flex items-center gap-2">
 												<motion.div whileTap={{ scale: 0.9 }}>
@@ -340,7 +359,9 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 														<Trash2 className="h-5 w-5" />
 													</Button>
 												</motion.div>
-												<ChevronRight className="h-5 w-5 text-muted-foreground" />
+												{!session.completed && (
+													<ChevronRight className="h-5 w-5 text-muted-foreground" />
+												)}
 											</div>
 										</CardContent>
 									</Card>

@@ -30,16 +30,18 @@ export function useStreaks() {
 	const fetchStreakData = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			// Fetch all workout dates (from both workouts and sessions)
+			// Fetch all workout dates (from both workouts and completed sessions only)
 			const { data: workouts, error: workoutsError } = await supabase
 				.from('workouts')
 				.select('workout_date');
 
 			if (workoutsError) throw workoutsError;
 
+			// Only fetch COMPLETED workout sessions for streak calculation
 			const { data: sessions, error: sessionsError } = await supabase
 				.from('workout_sessions')
-				.select('workout_date');
+				.select('workout_date')
+				.eq('completed', true);
 
 			if (sessionsError) throw sessionsError;
 

@@ -43,6 +43,7 @@ export type WorkoutSession = {
 	workout_date: string;
 	template_id: string | null;
 	template_name: string;
+	completed: boolean;
 	created_at: string;
 };
 

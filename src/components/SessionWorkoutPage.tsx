@@ -273,8 +273,25 @@ export function SessionWorkoutPage() {
 		updateExercise(exercise.id, fieldKey, { actual_reps: newReps });
 	};
 
-	const handleCompleteWorkout = () => {
+	const handleCompleteWorkout = async () => {
 		haptics.celebration();
+		
+		// Mark session as completed in database
+		if (sessionId) {
+			try {
+				const { error: updateError } = await supabase
+					.from('workout_sessions')
+					.update({ completed: true })
+					.eq('id', sessionId);
+				
+				if (updateError) {
+					console.error('Error marking session as completed:', updateError);
+				}
+			} catch (err) {
+				console.error('Error updating session:', err);
+			}
+		}
+		
 		// Show summary immediately
 		setShowSummary(true);
 		
