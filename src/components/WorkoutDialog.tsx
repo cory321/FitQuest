@@ -49,7 +49,13 @@ export function WorkoutDialog({
 		setIsSubmitting(true);
 		setError(null);
 		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) throw new Error('Not authenticated');
+
 			const { error: submitError } = await supabase.from('workouts').insert({
+				user_id: user.id,
 				workout_date: formatDateLocal(selectedDate),
 				workout_name: workoutName.trim(),
 				reps: reps ? parseInt(reps) : null,

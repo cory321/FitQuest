@@ -205,9 +205,15 @@ export function TemplateBuilder({
 				if (deleteError) throw deleteError;
 			} else {
 				// Create new template
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
+				if (!user) throw new Error('Not authenticated');
+
 				const { data: newTemplate, error: createError } = await supabase
 					.from('workout_templates')
 					.insert({
+						user_id: user.id,
 						name: templateName.trim(),
 						description: description.trim() || null,
 					})
