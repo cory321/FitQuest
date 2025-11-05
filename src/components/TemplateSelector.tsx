@@ -138,10 +138,16 @@ export function TemplateSelector() {
 		setError(null);
 
 		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) throw new Error('Not authenticated');
+
 			// Create new template with " (Copy)" suffix
 			const { data: newTemplate, error: createError } = await supabase
 				.from('workout_templates')
 				.insert({
+					user_id: user.id,
 					name: `${template.name} (Copy)`,
 					description: template.description,
 				})
@@ -271,10 +277,16 @@ export function TemplateSelector() {
 		setError(null);
 
 		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) throw new Error('Not authenticated');
+
 			// Create a new workout session
 			const { data: session, error: sessionError } = await supabase
 				.from('workout_sessions')
 				.insert({
+					user_id: user.id,
 					workout_date: formatDateLocal(selectedDate),
 					template_id: template.id,
 					template_name: template.name,

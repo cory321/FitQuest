@@ -1,4 +1,11 @@
-import { Home, TrendingUp, User, Plus, FileText } from 'lucide-react';
+import {
+	Home,
+	TrendingUp,
+	User,
+	Plus,
+	FileText,
+	MessageCircle,
+} from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -13,6 +20,7 @@ interface NavItem {
 const navItems: NavItem[] = [
 	{ icon: Home, label: 'Home', path: '/' },
 	{ icon: TrendingUp, label: 'Stats', path: '/stats' },
+	{ icon: MessageCircle, label: 'Coach', path: '/coach' },
 	{ icon: FileText, label: 'Templates', path: '/templates' },
 	{ icon: User, label: 'Profile', path: '/profile' },
 ];

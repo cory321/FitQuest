@@ -1,7 +1,15 @@
 import { memo, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Trash2, Dumbbell, ChevronRight, Plus, BookOpen, FilePlus, CheckCircle2 } from 'lucide-react';
+import {
+	Trash2,
+	Dumbbell,
+	ChevronRight,
+	Plus,
+	BookOpen,
+	FilePlus,
+	CheckCircle2,
+} from 'lucide-react';
 import { supabase, type Workout, type WorkoutSession } from '@/lib/supabase';
 import { formatDateLocal } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { PressScale } from '../animations/PressScale';
+import { HydrationTracker } from '../HydrationTracker';
 
 interface DayViewProps {
 	currentDate: Date;
@@ -18,7 +27,11 @@ interface DayViewProps {
 	onWorkoutAdded: () => void;
 }
 
-export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutAdded }: DayViewProps) {
+export const DayView = memo(function DayView({
+	currentDate,
+	workouts,
+	onWorkoutAdded,
+}: DayViewProps) {
 	const navigate = useNavigate();
 	const [workoutName, setWorkoutName] = useState('');
 	const [reps, setReps] = useState('');
@@ -60,7 +73,13 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 		setIsSubmitting(true);
 		setError(null);
 		try {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) throw new Error('Not authenticated');
+
 			const { error: submitError } = await supabase.from('workouts').insert({
+				user_id: user.id,
 				workout_date: formatDateLocal(currentDate),
 				workout_name: workoutName.trim(),
 				reps: reps ? parseInt(reps) : null,
@@ -156,54 +175,57 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 						? 'No workouts yet'
 						: `${totalWorkouts} workout${totalWorkouts === 1 ? '' : 's'}`}
 				</p>
-		</div>
+			</div>
 
-		{error && (
-			<motion.div
-				initial={{ opacity: 0, height: 0 }}
-				animate={{ opacity: 1, height: 'auto' }}
-				className="bg-red-50 dark:bg-red-950/40 border-2 border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 px-4 py-3 rounded-lg text-sm"
-			>
-				{error}
-			</motion.div>
-		)}
+			{/* Hydration Tracker */}
+			<HydrationTracker currentDate={currentDate} />
 
-		{/* Quick Actions - Empty State */}
-		{totalWorkouts === 0 && (
-			<div className="flex flex-col gap-3">
-				<PressScale>
+			{error && (
+				<motion.div
+					initial={{ opacity: 0, height: 0 }}
+					animate={{ opacity: 1, height: 'auto' }}
+					className="bg-red-50 dark:bg-red-950/40 border-2 border-red-400 dark:border-red-700 text-red-900 dark:text-red-100 px-4 py-3 rounded-lg text-sm"
+				>
+					{error}
+				</motion.div>
+			)}
+
+			{/* Quick Actions - Empty State */}
+			{totalWorkouts === 0 && (
+				<div className="flex flex-col gap-3">
+					<PressScale>
+						<Button
+							onClick={handleBrowseTemplates}
+							className="h-14 text-base font-semibold w-full"
+							variant="outline"
+						>
+							<BookOpen className="mr-2 h-5 w-5" />
+							Browse Templates
+						</Button>
+					</PressScale>
 					<Button
-						onClick={handleBrowseTemplates}
+						disabled
 						className="h-14 text-base font-semibold w-full"
 						variant="outline"
 					>
-						<BookOpen className="mr-2 h-5 w-5" />
-						Browse Templates
+						<FilePlus className="mr-2 h-5 w-5" />
+						Create Template
 					</Button>
-				</PressScale>
-				<Button
-					disabled
-					className="h-14 text-base font-semibold w-full"
-					variant="outline"
-				>
-					<FilePlus className="mr-2 h-5 w-5" />
-					Create Template
-				</Button>
-				<PressScale>
-					<Button
-						onClick={() => {
-							haptics.buttonPress();
-							setShowAddForm(!showAddForm);
-						}}
-						className="h-14 text-base font-semibold w-full"
-						variant={showAddForm ? 'secondary' : 'default'}
-					>
-						<Plus className="mr-2 h-5 w-5" />
-						Add Workout Item
-					</Button>
-				</PressScale>
-			</div>
-		)}
+					<PressScale>
+						<Button
+							onClick={() => {
+								haptics.buttonPress();
+								setShowAddForm(!showAddForm);
+							}}
+							className="h-14 text-base font-semibold w-full"
+							variant={showAddForm ? 'secondary' : 'default'}
+						>
+							<Plus className="mr-2 h-5 w-5" />
+							Add Workout Item
+						</Button>
+					</PressScale>
+				</div>
+			)}
 
 			{/* Add Workout Form */}
 			<AnimatePresence>
@@ -328,19 +350,25 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 													</div>
 												)}
 												<div className="flex-1 min-w-0">
-													<p className={`font-semibold text-lg ${
-														session.completed
-															? 'text-emerald-700 dark:text-lime-400'
-															: 'text-primary'
-													}`}>
+													<p
+														className={`font-semibold text-lg ${
+															session.completed
+																? 'text-emerald-700 dark:text-lime-400'
+																: 'text-primary'
+														}`}
+													>
 														{session.template_name}
 													</p>
-													<p className={`text-sm mt-1 ${
-														session.completed
-															? 'text-emerald-700 dark:text-lime-500'
-															: 'text-muted-foreground'
-													}`}>
-														{session.completed ? 'Workout completed ✓' : 'Tap to start workout'}
+													<p
+														className={`text-sm mt-1 ${
+															session.completed
+																? 'text-emerald-700 dark:text-lime-500'
+																: 'text-muted-foreground'
+														}`}
+													>
+														{session.completed
+															? 'Workout completed ✓'
+															: 'Tap to start workout'}
 													</p>
 												</div>
 											</div>
@@ -408,9 +436,7 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 											</p>
 											<div className="text-sm text-muted-foreground mt-1">
 												{workout.reps && <span>{workout.reps} reps</span>}
-												{workout.reps && workout.weight_lbs && (
-													<span> • </span>
-												)}
+												{workout.reps && workout.weight_lbs && <span> • </span>}
 												{workout.weight_lbs && (
 													<span>{workout.weight_lbs} lbs</span>
 												)}
@@ -437,44 +463,42 @@ export const DayView = memo(function DayView({ currentDate, workouts, onWorkoutA
 				)}
 			</AnimatePresence>
 
-	{/* Quick Actions - Below Workouts */}
-	{totalWorkouts > 0 && (
-		<div className="flex flex-col gap-3">
-			<PressScale>
-				<Button
-					onClick={handleBrowseTemplates}
-					className="h-14 text-base font-semibold w-full"
-					variant="outline"
-				>
-					<BookOpen className="mr-2 h-5 w-5" />
-					Browse Templates
-				</Button>
-			</PressScale>
-			<Button
-				disabled
-				className="h-14 text-base font-semibold w-full"
-				variant="outline"
-			>
-				<FilePlus className="mr-2 h-5 w-5" />
-				Create Template
-			</Button>
-			<PressScale>
-				<Button
-					onClick={() => {
-						haptics.buttonPress();
-						setShowAddForm(!showAddForm);
-					}}
-					className="h-14 text-base font-semibold w-full"
-					variant={showAddForm ? 'secondary' : 'default'}
-				>
-					<Plus className="mr-2 h-5 w-5" />
-					Add Workout Item
-				</Button>
-			</PressScale>
+			{/* Quick Actions - Below Workouts */}
+			{totalWorkouts > 0 && (
+				<div className="flex flex-col gap-3">
+					<PressScale>
+						<Button
+							onClick={handleBrowseTemplates}
+							className="h-14 text-base font-semibold w-full"
+							variant="outline"
+						>
+							<BookOpen className="mr-2 h-5 w-5" />
+							Browse Templates
+						</Button>
+					</PressScale>
+					<Button
+						disabled
+						className="h-14 text-base font-semibold w-full"
+						variant="outline"
+					>
+						<FilePlus className="mr-2 h-5 w-5" />
+						Create Template
+					</Button>
+					<PressScale>
+						<Button
+							onClick={() => {
+								haptics.buttonPress();
+								setShowAddForm(!showAddForm);
+							}}
+							className="h-14 text-base font-semibold w-full"
+							variant={showAddForm ? 'secondary' : 'default'}
+						>
+							<Plus className="mr-2 h-5 w-5" />
+							Add Workout Item
+						</Button>
+					</PressScale>
+				</div>
+			)}
 		</div>
-	)}
-
-	</div>
-);
+	);
 });
-
