@@ -17,7 +17,6 @@ interface ConversationListItemProps {
 }
 
 export function ConversationListItem({
-	id,
 	title,
 	updatedAt,
 	isActive,
@@ -27,7 +26,6 @@ export function ConversationListItem({
 }: ConversationListItemProps) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editValue, setEditValue] = useState(title || 'Untitled');
-	const [showActions, setShowActions] = useState(false);
 
 	const displayTitle = title || 'Untitled Conversation';
 	const truncatedTitle =

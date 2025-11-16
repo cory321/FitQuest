@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ThemeToggle } from './ThemeToggle';
-import { User, Settings, Info, Save, X, Activity, TrendingUp } from 'lucide-react';
+import { User, Settings, Info, Save, X, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';

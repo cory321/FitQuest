@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ConversationListItem } from './ConversationListItem';
 import { useConversations } from '../hooks/useConversations';
 import { haptics } from '@/lib/haptics';
-import type { ConversationWithPreview } from '../services/conversationService';
 
 interface ConversationListProps {
 	currentConversationId: string | null;

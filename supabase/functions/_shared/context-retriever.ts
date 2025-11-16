@@ -7,6 +7,7 @@ export async function retrieveUserContext(
 		includeRecentWorkouts?: boolean;
 		includeExerciseFrequency?: boolean;
 		includeTemplateStats?: boolean;
+		includeWorkoutTemplates?: boolean;
 		includeStreakData?: boolean;
 		includeUserProfile?: boolean;
 		includeHydrationData?: boolean;
@@ -77,6 +78,40 @@ export async function retrieveUserContext(
 			'get_template_usage_stats'
 		);
 		context.templateStats = templateStats || [];
+	}
+
+	// Get workout templates with exercises
+	if (options.includeWorkoutTemplates !== false) {
+		const { data: templates } = await supabaseClient
+			.from('workout_templates')
+			.select('id, name, description')
+			.eq('user_id', userId)
+			.order('name');
+
+		if (templates && templates.length > 0) {
+			// Fetch exercises for each template
+			const templatesWithExercises = await Promise.all(
+				templates.map(async (template) => {
+					const { data: exercises } = await supabaseClient
+						.from('template_exercises')
+						.select(
+							'exercise_name, sets, target_reps, target_weight, order_index'
+						)
+						.eq('template_id', template.id)
+						.order('order_index');
+
+					return {
+						name: template.name,
+						description: template.description,
+						exercises: exercises || [],
+					};
+				})
+			);
+
+			context.workoutTemplates = templatesWithExercises;
+		} else {
+			context.workoutTemplates = [];
+		}
 	}
 
 	// Get streak data

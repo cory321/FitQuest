@@ -1,0 +1,15 @@
+{
+	"mcpServers": {
+		"supabase": {
+			"command": "/Users/corywilliams/.nvm/versions/node/v22.17.1/bin/npx",
+			"args": [
+				"-y",
+				"@supabase/mcp-server-supabase@latest",
+				"--project-ref=lucdqrgsfhypovbdwxts"
+			],
+			"env": {
+				"SUPABASE_ACCESS_TOKEN": "sbp_27b07a326e0561c5fa47b3c7441df8467298a01c"
+			}
+		}
+	}
+}

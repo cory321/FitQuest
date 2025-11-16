@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
 	Trash2,
-	Dumbbell,
 	ChevronRight,
 	Plus,
 	BookOpen,
